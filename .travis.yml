@@ -1,0 +1,21 @@
+sudo: required
+services:
+    - docker
+
+before_install:
+    - docker build -t rmhedges/react-test -f ./client/Dockerfile.dev ./client
+
+script:
+    - docker run rmhedges/react-test npm test -- --coverage
+
+after_success:
+    - docker build -t rmhedges/multi-client ./client
+    - docker build -t rmhedges/multi-nginx ./nginx
+    - docker build -t rmhedges/multi-server ./server
+    - docker build -t rmhedges/multi-worker ./worker
+    - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_ID" --password-stdin
+    - docker push rmhedges/multi-client
+    - docker push rmhedges/multi-nginx
+    - docker push rmhedges/multi-server
+    - docker push rmhedges/multi-worker
+
